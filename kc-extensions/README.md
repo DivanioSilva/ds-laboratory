@@ -39,6 +39,24 @@ You can also build the entire Maven reactor:
 mvn clean package
 ```
 
+## Testing
+
+The test suite includes unit tests and a Testcontainers integration test. The
+integration test builds the provider JAR, starts Keycloak 26.7.3 in Docker,
+installs the extension, obtains an administrator token, and confirms that the
+Required Action provider is available through the Keycloak Admin API. A second
+container test creates a realm, client, and user, signs the user in, submits the
+password reset form, and verifies the redirect to a fresh OIDC client login.
+
+Run all tests from the project root while Docker is running:
+
+```bash
+mvn -pl kc-extensions -am test
+```
+
+When Docker is unavailable, the container test is skipped and the unit tests
+continue to run.
+
 ## Running with Docker Compose
 
 The project provides a custom image in `Dockerfile.keycloak`. During the build,

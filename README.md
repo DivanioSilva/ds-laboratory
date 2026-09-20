@@ -5,30 +5,103 @@ Multi-module project built with Java 17 and Maven. The reactor contains:
 - `application`: Spring Boot REST application;
 - `kc-extensions`: custom Keycloak extensions.
 
-## Running the project
+## Setup script
 
-To compile all modules, build the images, and deploy all services locally:
+[`setup.sh`](setup.sh) is the main command-line entry point for building and
+managing the local environment. It can be run from any directory because it
+automatically changes to the project root.
+
+### Prerequisites
+
+- Bash
+- Docker with the Compose plugin (`docker compose`)
+- Maven 3.9 or later for the `build` command
+- Java 17 for the Maven build and tests
+
+Make the script executable if required:
+
+```bash
+chmod +x setup.sh
+```
+
+Display the available commands:
+
+```bash
+./setup.sh --help
+```
+
+### `build`
 
 ```bash
 ./setup.sh build
 ```
 
-The script runs the Maven tests, builds the Spring application, Angular frontend,
-and Keycloak images with the extension installed, and starts the environment with
-Docker Compose.
+This command performs the complete build and deployment workflow:
 
-To stop all services while preserving containers, images, networks, volumes, and
-data:
+1. validates `docker-compose.yml`;
+2. runs `mvn clean verify` for the complete Maven reactor;
+3. builds every Docker image, including the Angular frontend and the customized
+   Keycloak image;
+4. starts all services in detached mode and removes orphaned containers;
+5. prints the service status and local URLs.
+
+The command stops immediately if validation, compilation, tests, image creation,
+or deployment fails.
+
+### `down`
 
 ```bash
 ./setup.sh down
 ```
 
-To stop and remove the deployment while preserving volumes and data:
+Runs `docker compose stop`. Services are stopped, but their containers, images,
+network, volumes, and data remain available. Run `./setup.sh build` to build and
+start everything again, or `docker compose start` to restart the unchanged
+containers without rebuilding.
+
+### `destroy`
 
 ```bash
 ./setup.sh destroy
 ```
+
+Runs `docker compose down --remove-orphans`. This stops and removes the Compose
+containers and network, including orphaned containers. Docker images and named
+volumes are not removed, so PostgreSQL and Keycloak data remain available for the
+next deployment.
+
+To remove persistent data as well, use Docker Compose manually with the `--volumes`
+option. This is intentionally not exposed by `setup.sh` because it is destructive.
+
+### Environment variables
+
+Docker Compose automatically reads a `.env` file in the project root. Start from
+the supplied example when custom values are required:
+
+```bash
+cp .env.example .env
+```
+
+The relevant variables include:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `POSTGRES_DB` | `persondb` | PostgreSQL database name |
+| `POSTGRES_USER` | `personapp` | PostgreSQL username |
+| `POSTGRES_PASSWORD` | `personapp` | PostgreSQL password |
+| `POSTGRES_PORT` | `5432` | PostgreSQL host port |
+| `SPRING_PORT` | `8080` | Spring Boot API host port |
+| `ANGULAR_PORT` | `4200` | Angular frontend host port |
+| `KEYCLOAK_PORT` | `8081` | Keycloak host port |
+| `KEYCLOAK_ADMIN` | `a` | Keycloak bootstrap administrator |
+| `KEYCLOAK_ADMIN_PASSWORD` | `a` | Keycloak bootstrap password |
+| `FAKE_SMTP_PORT` | `8025` | SMTP host port |
+| `FAKE_SMTP_WEB_PORT` | `8082` | SMTP web interface host port |
+| `FAKE_SMTP_MANAGEMENT_PORT` | `8083` | SMTP management host port |
+
+Never commit a `.env` file containing production secrets.
+
+## Running with Docker Compose directly
 
 To start PostgreSQL, the Spring Boot API, and the Angular frontend directly:
 
@@ -56,7 +129,7 @@ To stop all services with Docker Compose:
 docker compose down
 ```
 
-Ports can be customized with `SPRING_PORT` and `ANGULAR_PORT`.
+Ports can be customized through the environment variables described above.
 
 ## Importing people with Spring Batch
 

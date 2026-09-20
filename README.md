@@ -246,7 +246,7 @@ When `docker compose up --build` runs, the custom Keycloak image compiles this
 module, installs the JAR in `/opt/keycloak/providers/`, and runs `kc.sh build`
 before starting the server.
 
-The `realms/realm-users.json` file is made available in Keycloak's import
+The `realms/realm-users-full.json` file is made available in Keycloak's import
 directory. The server starts with `--import-realm` and imports the `users` realm
 when it does not already exist. Data is stored in the `keycloak_data` volume;
 Keycloak does not overwrite an existing realm on subsequent starts.

@@ -21,7 +21,8 @@ Usage: $(basename "$0") <command>
 
 Commands:
   build    Compile, test, build the images, and start all services.
-  down     Stop services without removing containers, images, networks, or volumes.
+  restart  Restart one Docker Compose service: restart <component>.
+  down     Stop one Docker Compose service: down <component>.
   destroy  Stop and remove containers and the network while preserving volumes.
 EOF
 }
@@ -51,10 +52,34 @@ build_and_deploy() {
   echo "SMTP UI:   http://localhost:${FAKE_SMTP_WEB_PORT:-8082}"
 }
 
-stop_deployment() {
-  echo "Stopping all services..."
-  docker compose stop
-  echo "Services stopped. Containers, images, networks, and volumes were preserved."
+stop_component() {
+  local component="$1"
+
+  if ! docker compose config --services | grep -Fxq "$component"; then
+    echo "Error: '$component' is not a Docker Compose service." >&2
+    echo "Available services:" >&2
+    docker compose config --services >&2
+    exit 1
+  fi
+
+  echo "Stopping $component..."
+  docker compose stop "$component"
+  docker compose ps "$component"
+}
+
+restart_component() {
+  local component="$1"
+
+  if ! docker compose config --services | grep -Fxq "$component"; then
+    echo "Error: '$component' is not a Docker Compose service." >&2
+    echo "Available services:" >&2
+    docker compose config --services >&2
+    exit 1
+  fi
+
+  echo "Restarting $component..."
+  docker compose restart "$component"
+  docker compose ps "$component"
 }
 
 destroy_deployment() {
@@ -67,8 +92,19 @@ case "${1:-}" in
   build)
     build_and_deploy
     ;;
+  restart)
+    if [[ $# -ne 2 ]]; then
+      echo "Usage: $(basename "$0") restart <component>" >&2
+      exit 1
+    fi
+    restart_component "$2"
+    ;;
   down)
-    stop_deployment
+    if [[ $# -ne 2 ]]; then
+      echo "Usage: $(basename "$0") down <component>" >&2
+      exit 1
+    fi
+    stop_component "$2"
     ;;
   destroy)
     destroy_deployment

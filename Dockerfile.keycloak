@@ -1,0 +1,18 @@
+FROM maven:3.9.14-eclipse-temurin-17 AS extension-build
+WORKDIR /workspace
+
+COPY pom.xml .
+COPY application/pom.xml application/pom.xml
+COPY kc-extensions/pom.xml kc-extensions/pom.xml
+COPY kc-extensions/src kc-extensions/src
+
+RUN mvn -pl kc-extensions -am package -DskipTests
+
+FROM quay.io/keycloak/keycloak:26.7.3
+
+COPY --from=extension-build \
+    --chown=keycloak:keycloak \
+    /workspace/kc-extensions/target/kc-extensions-1.0.0-SNAPSHOT.jar \
+    /opt/keycloak/providers/kc-extensions.jar
+
+RUN /opt/keycloak/bin/kc.sh build

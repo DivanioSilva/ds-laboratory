@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:17.11-alpine3.24
+    container_name: ds-laboratory-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-persondb}
+      POSTGRES_USER: ${POSTGRES_USER:-personapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-personapp}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  spring:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ds-laboratory-api
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-persondb}
+      DB_USERNAME: ${POSTGRES_USER:-personapp}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-personapp}
+    ports:
+      - "${SPRING_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  angular:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ds-laboratory-web
+    ports:
+      - "${ANGULAR_PORT:-4200}:80"
+    depends_on:
+      - spring
+    restart: unless-stopped
+
+  keycloak:
+    build:
+      context: .
+      dockerfile: Dockerfile.keycloak
+    image: ds-laboratory-keycloak:26.7.3
+    container_name: ds-laboratory-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-a}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-a}
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - "${KEYCLOAK_PORT:-8081}:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./realms:/opt/keycloak/data/import:ro
+    restart: unless-stopped
+
+  fake-smtp:
+    image: gessnerfl/fake-smtp-server:2.5.0
+    container_name: ds-laboratory-fake-smtp
+    ports:
+      - "${FAKE_SMTP_PORT:-8025}:8025"
+      - "${FAKE_SMTP_WEB_PORT:-8082}:8080"
+      - "${FAKE_SMTP_MANAGEMENT_PORT:-8083}:8081"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  keycloak_data:

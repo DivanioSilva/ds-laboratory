@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: ds-laboratory
+  datasource:
+    url: "${DB_URL:jdbc:postgresql://localhost:5432/persondb}"
+    username: "${DB_USERNAME:personapp}"
+    password: "${DB_PASSWORD:personapp}"
+  freemarker:
+    suffix: .ftlh
+    cache: false
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  jpa:
+    hibernate:
+      ddl-auto: "${JPA_DDL_AUTO:update}"
+  batch:
+    job:
+      enabled: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

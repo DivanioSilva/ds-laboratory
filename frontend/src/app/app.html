@@ -1,0 +1,73 @@
+@if (!auth.authenticated()) {
+<main class="landing-shell">
+  <section class="landing-card">
+    <span class="eyebrow">{{ t().recordManagement }}</span>
+    <h1>{{ t().welcomeTitle }}</h1>
+    <p>{{ t().welcomeDescription }}</p>
+    <ul>
+      <li>{{ t().welcomeFeatureRecords }}</li>
+      <li>{{ t().welcomeFeatureImport }}</li>
+      <li>{{ t().welcomeFeatureSecurity }}</li>
+    </ul>
+    <button class="primary login-button" type="button" (click)="auth.login()">{{ t().login }}</button>
+    <small>{{ t().loginHint }}</small>
+  </section>
+</main>
+} @else {
+<main class="shell">
+  <header class="topbar">
+    <div><span class="eyebrow">{{ t().recordManagement }}</span><h1>{{ t().people }}</h1><p>{{ t().subtitle }}</p></div>
+    <div class="topbar-actions">
+      <span class="authenticated-user">{{ auth.username }}</span>
+      <button class="text-button" type="button" (click)="auth.logout()">{{ t().logout }}</button>
+      <label class="language-selector">{{ t().language }}
+        <select [value]="language()" (change)="changeLanguage($event)">
+          @for (item of languages; track item.code) { <option [value]="item.code">{{ item.label }}</option> }
+        </select>
+      </label>
+      <button class="theme-button" type="button" (click)="toggleTheme()">{{ darkMode() ? '☀️ ' + t().lightMode : '🌙 ' + t().darkMode }}</button>
+    </div>
+  </header>
+  @if (message()) { <div class="notice success" role="status">{{ message() }}</div> }
+  @if (error()) { <div class="notice error" role="alert">{{ error() }}</div> }
+  <section class="grid">
+    <article class="card form-card">
+      <div class="section-heading"><div><span class="step">01</span><h2>{{ editingId() === null ? t().newPerson : t().editPerson }}</h2></div>@if (editingId() !== null) { <button class="text-button" type="button" (click)="cancelEdit()">{{ t().cancel }}</button> }</div>
+      <form [formGroup]="personForm" (ngSubmit)="submit()">
+        <label>{{ t().firstName }}<input type="text" formControlName="firstName" placeholder="Ex.: Ana" />@if (personForm.controls.firstName.touched && personForm.controls.firstName.invalid) { <small>{{ t().firstNameRequired }}</small> }</label>
+        <label>{{ t().lastName }}<input type="text" formControlName="lastName" placeholder="Ex.: Silva" />@if (personForm.controls.lastName.touched && personForm.controls.lastName.invalid) { <small>{{ t().lastNameRequired }}</small> }</label>
+        <div class="form-row">
+          <label>{{ t().age }}<input type="number" min="1" formControlName="age" />@if (personForm.controls.age.touched && personForm.controls.age.invalid) { <small>{{ t().ageRequired }}</small> }</label>
+          <label>{{ t().addressId }}<input type="number" min="1" formControlName="addressId" [placeholder]="t().optional" /></label>
+        </div>
+        <button class="primary wide" type="submit" [disabled]="saving()">{{ saving() ? t().saving : editingId() === null ? t().addPerson : t().saveChanges }}</button>
+      </form>
+    </article>
+    <article class="card import-card">
+      <div class="section-heading"><div><span class="step">02</span><h2>{{ t().importCsv }}</h2></div></div>
+      <p>{{ t().csvHelp }} <code>firstName,lastName,age</code>.</p>
+      <label class="file-zone"><input type="file" accept=".csv,text/csv" (change)="chooseFile($event)" /><span class="file-icon">↥</span><strong>{{ selectedFile()?.name ?? t().chooseCsv }}</strong><small>{{ t().maxSize }}</small></label>
+      <button class="secondary wide" type="button" (click)="importCsv()" [disabled]="importing()">{{ importing() ? t().importing : t().runImport }}</button>
+    </article>
+  </section>
+  <section class="card list-card">
+    <div class="list-header"><div><span class="step">03</span><h2>{{ t().peopleList }}</h2><p>{{ people().length }} {{ t().results }}</p></div><label class="search"><span>⌕</span><input type="search" [formControl]="searchControl" [placeholder]="searchPlaceholder()" /></label></div>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th [attr.aria-sort]="sortField() === 'id' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('id')">{{ t().id }} <span>{{ sortIndicator('id') }}</span></button></th>
+        <th [attr.aria-sort]="sortField() === 'name' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('name')">{{ t().name }} <span>{{ sortIndicator('name') }}</span></button></th>
+        <th [attr.aria-sort]="sortField() === 'age' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('age')">{{ t().age }} <span>{{ sortIndicator('age') }}</span></button></th>
+        <th>{{ t().address }}</th><th class="actions-heading">{{ t().actions }}</th>
+      </tr></thead>
+      <tbody>@if (loading()) { <tr><td colspan="5" class="empty">{{ t().loading }}</td></tr> } @else {
+        @for (person of paginatedPeople(); track person.id) { <tr><td><span class="id-badge">#{{ person.id }}</span></td><td><strong>{{ person.firstName }} {{ person.lastName }}</strong></td><td>{{ person.age }} {{ t().years }}</td><td>{{ person.addressId ? '#' + person.addressId : '—' }}</td><td class="actions"><button type="button" class="icon-button edit" (click)="edit(person.id)" [attr.aria-label]="t().edit">✎</button><button type="button" class="icon-button delete" (click)="remove(person)" [attr.aria-label]="t().delete">×</button></td></tr> }
+        @empty { <tr><td colspan="5" class="empty">{{ t().empty }}</td></tr> }
+      }</tbody>
+    </table></div>
+    <nav class="pagination" [attr.aria-label]="t().pagination">
+      <p>{{ t().showing }} {{ firstVisibleResult() }}–{{ lastVisibleResult() }} {{ t().of }} {{ people().length }}</p>
+      <div class="pagination-actions"><label>{{ t().perPage }}<select [value]="pageSize()" (change)="changePageSize($event)"><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label><button type="button" class="page-button" (click)="previousPage()" [disabled]="currentPage() === 1" [attr.aria-label]="t().previous">‹</button><span>{{ t().page }} {{ currentPage() }} {{ t().of }} {{ totalPages() }}</span><button type="button" class="page-button" (click)="nextPage()" [disabled]="currentPage() === totalPages()" [attr.aria-label]="t().next">›</button></div>
+    </nav>
+  </section>
+</main>
+}

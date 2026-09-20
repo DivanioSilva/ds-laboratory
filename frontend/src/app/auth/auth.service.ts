@@ -17,7 +17,11 @@ export class AuthService {
   }
 
   logout(): void {
-    void keycloak.logout({ redirectUri: window.location.origin });
+    void keycloak.logout({ redirectUri: window.location.origin })
+      .finally(() => {
+        keycloak.clearToken();
+        this.authenticated.set(false);
+      });
   }
 
   hasRole(role: string): boolean {

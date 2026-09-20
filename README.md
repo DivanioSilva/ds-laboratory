@@ -205,8 +205,29 @@ The flow uses Authorization Code with PKCE S256. Requests to `/api` automaticall
 include the access token in the `Authorization: Bearer` header, and the token is
 refreshed before it expires.
 
-The frontend proxy forwards `/realms` to Keycloak so that the application and
-OIDC endpoints use the same `http://localhost:4200` origin.
+The login form is served directly by Keycloak at `http://localhost:8081`; after
+authentication, the user is redirected back to the Angular application.
+
+### Keycloak roles
+
+The Angular interface uses roles from the access token to show the available
+person-management operations. Roles may be configured as realm roles or as
+client roles of `angular-client`.
+
+| Role | Interface capability |
+| --- | --- |
+| `create_users` | Displays the form for adding a person. |
+| `import_users` | Displays the CSV import area. |
+| `edit_users` | Displays the edit button and allows saving changes. |
+| `delete_users` | Displays the delete button and allows removing a person. |
+
+Create the roles in **Keycloak Admin Console → users → Realm roles** (or in
+the `angular-client` client roles) and assign them to the appropriate user.
+The user must sign out and sign in again after a role change so that the new
+access token includes the updated roles.
+
+These roles currently control the frontend interface. Protect the REST API
+separately if calls made outside the Angular application must also be denied.
 
 Angular requires Node.js 24 LTS or a compatible version specified in
 `frontend/package.json`.

@@ -12,6 +12,29 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Autenticação e roles
+
+A página inicial é pública. O botão **Entrar** encaminha o utilizador para o
+formulário de login do Keycloak em `http://localhost:8081`; as credenciais não
+são recolhidas pela aplicação Angular. Depois da autenticação, o Keycloak
+redireciona o utilizador de volta para o frontend. Ao atualizar a página, o
+frontend verifica a sessão SSO de forma silenciosa para manter o contexto atual.
+
+As seguintes roles do Keycloak determinam as operações apresentadas na
+interface. Podem ser realm roles ou client roles do cliente `angular-client`.
+
+| Role | Operação disponível |
+| --- | --- |
+| `create_users` | Apresenta o formulário para adicionar uma pessoa. |
+| `import_users` | Apresenta a importação de ficheiros CSV. |
+| `edit_users` | Apresenta a ação de editar e permite guardar alterações. |
+| `delete_users` | Apresenta a ação de eliminar pessoas. |
+
+Depois de alterar as roles de um utilizador no Keycloak, termine a sessão e
+autentique-se novamente para receber um token atualizado. Estas roles controlam
+a interface; a autorização dos endpoints REST deve ser aplicada no backend
+quando também for necessário impedir chamadas diretas à API.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

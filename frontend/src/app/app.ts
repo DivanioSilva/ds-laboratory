@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import { Person, PersonImportResponse, PersonRequest } from './person.model';
 import { PersonService } from './person.service';
@@ -10,7 +10,7 @@ import { AuthService } from './auth/auth.service';
 type SortField = 'id' | 'name' | 'age';
 type SortDirection = 'asc' | 'desc';
 
-@Component({ selector: 'app-root', imports: [CommonModule, ReactiveFormsModule], styleUrl: './app.scss', templateUrl: './app.html' })
+@Component({ selector: 'app-root', imports: [CommonModule, FormsModule, ReactiveFormsModule], styleUrl: './app.scss', templateUrl: './app.html' })
 export class App implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly personService = inject(PersonService);
@@ -72,7 +72,12 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     this.applyTheme();
-    document.documentElement.lang = this.language();
+    const userLanguage = this.languageFromUserLocale();
+    if (userLanguage) {
+      this.applyLanguage(userLanguage);
+    } else {
+      document.documentElement.lang = this.language();
+    }
     if (!this.auth.authenticated()) {
       return;
     }
@@ -82,6 +87,8 @@ export class App implements OnInit {
 
   protected submit(): void {
     if (this.personForm.invalid) { this.personForm.markAllAsTouched(); return; }
+    if (this.editingId() === null && !this.auth.hasRole('create_users')) return;
+    if (this.editingId() !== null && !this.auth.hasRole('edit_users')) return;
     this.saving.set(true);
     this.clearFeedback();
     const request = this.personForm.getRawValue() as PersonRequest;
@@ -99,6 +106,7 @@ export class App implements OnInit {
   }
 
   protected edit(id: number): void {
+    if (!this.auth.hasRole('edit_users')) return;
     this.clearFeedback();
     this.personService.getById(id).subscribe({
       next: (person) => {
@@ -111,6 +119,7 @@ export class App implements OnInit {
   }
 
   protected remove(person: Person): void {
+    if (!this.auth.hasRole('delete_users')) return;
     if (!confirm(`${this.t().deleteConfirm} ${person.firstName} ${person.lastName}?`)) return;
     this.clearFeedback();
     this.personService.delete(person.id).subscribe({
@@ -129,6 +138,7 @@ export class App implements OnInit {
   }
 
   protected importCsv(): void {
+    if (!this.auth.hasRole('import_users')) return;
     const file = this.selectedFile();
     if (!file) { this.error.set(this.t().selectCsv); return; }
     this.importing.set(true);
@@ -150,11 +160,11 @@ export class App implements OnInit {
     this.applyTheme();
   }
 
-  protected changeLanguage(event: Event): void {
-    const language = (event.target as HTMLSelectElement).value as Language;
-    this.language.set(language);
-    localStorage.setItem('language', language);
-    document.documentElement.lang = language;
+  protected changeLanguage(language: string): void {
+    if (!this.isSupportedLanguage(language)) {
+      return;
+    }
+    this.applyLanguage(language);
     this.clearFeedback();
   }
 
@@ -213,6 +223,22 @@ export class App implements OnInit {
   }
 
   private clearFeedback(): void { this.error.set(''); this.message.set(''); }
+  private applyLanguage(language: Language): void {
+    this.language.set(language);
+    localStorage.setItem('language', language);
+    document.documentElement.lang = language;
+  }
+  private languageFromUserLocale(): Language | null {
+    if (!this.auth.authenticated() || typeof this.auth.locale !== 'string') {
+      return null;
+    }
+
+    const language = this.auth.locale.toLowerCase().replace('_', '-').split('-')[0];
+    return this.isSupportedLanguage(language) ? language : null;
+  }
+  private isSupportedLanguage(language: string): language is Language {
+    return language in translations;
+  }
   private errorMessage(error: { error?: { detail?: string }; message?: string }): string {
     return error.error?.detail ?? error.message ?? this.t().errorDefault;
   }

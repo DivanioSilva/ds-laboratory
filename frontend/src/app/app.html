@@ -1,6 +1,11 @@
 @if (!auth.authenticated()) {
 <main class="landing-shell">
   <section class="landing-card">
+    <label class="landing-language-selector">{{ t().language }}
+      <select [ngModel]="language()" (ngModelChange)="changeLanguage($event)">
+        @for (item of languages; track item.code) { <option [value]="item.code">{{ item.label }}</option> }
+      </select>
+    </label>
     <span class="eyebrow">{{ t().recordManagement }}</span>
     <h1>{{ t().welcomeTitle }}</h1>
     <p>{{ t().welcomeDescription }}</p>
@@ -21,7 +26,7 @@
       <span class="authenticated-user">{{ auth.username }}</span>
       <button class="text-button" type="button" (click)="auth.logout()">{{ t().logout }}</button>
       <label class="language-selector">{{ t().language }}
-        <select [value]="language()" (change)="changeLanguage($event)">
+        <select [ngModel]="language()" (ngModelChange)="changeLanguage($event)">
           @for (item of languages; track item.code) { <option [value]="item.code">{{ item.label }}</option> }
         </select>
       </label>
@@ -30,7 +35,9 @@
   </header>
   @if (message()) { <div class="notice success" role="status">{{ message() }}</div> }
   @if (error()) { <div class="notice error" role="alert">{{ error() }}</div> }
+  @if (auth.hasRole('create_users') || auth.hasRole('import_users') || editingId() !== null) {
   <section class="grid">
+    @if (auth.hasRole('create_users') || (editingId() !== null && auth.hasRole('edit_users'))) {
     <article class="card form-card">
       <div class="section-heading"><div><span class="step">01</span><h2>{{ editingId() === null ? t().newPerson : t().editPerson }}</h2></div>@if (editingId() !== null) { <button class="text-button" type="button" (click)="cancelEdit()">{{ t().cancel }}</button> }</div>
       <form [formGroup]="personForm" (ngSubmit)="submit()">
@@ -43,13 +50,17 @@
         <button class="primary wide" type="submit" [disabled]="saving()">{{ saving() ? t().saving : editingId() === null ? t().addPerson : t().saveChanges }}</button>
       </form>
     </article>
+    }
+    @if (auth.hasRole('import_users')) {
     <article class="card import-card">
       <div class="section-heading"><div><span class="step">02</span><h2>{{ t().importCsv }}</h2></div></div>
       <p>{{ t().csvHelp }} <code>firstName,lastName,age</code>.</p>
       <label class="file-zone"><input type="file" accept=".csv,text/csv" (change)="chooseFile($event)" /><span class="file-icon">↥</span><strong>{{ selectedFile()?.name ?? t().chooseCsv }}</strong><small>{{ t().maxSize }}</small></label>
       <button class="secondary wide" type="button" (click)="importCsv()" [disabled]="importing()">{{ importing() ? t().importing : t().runImport }}</button>
     </article>
+    }
   </section>
+  }
   <section class="card list-card">
     <div class="list-header"><div><span class="step">03</span><h2>{{ t().peopleList }}</h2><p>{{ people().length }} {{ t().results }}</p></div><label class="search"><span>⌕</span><input type="search" [formControl]="searchControl" [placeholder]="searchPlaceholder()" /></label></div>
     <div class="table-wrap"><table>
@@ -57,11 +68,11 @@
         <th [attr.aria-sort]="sortField() === 'id' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('id')">{{ t().id }} <span>{{ sortIndicator('id') }}</span></button></th>
         <th [attr.aria-sort]="sortField() === 'name' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('name')">{{ t().name }} <span>{{ sortIndicator('name') }}</span></button></th>
         <th [attr.aria-sort]="sortField() === 'age' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" type="button" (click)="sortBy('age')">{{ t().age }} <span>{{ sortIndicator('age') }}</span></button></th>
-        <th>{{ t().address }}</th><th class="actions-heading">{{ t().actions }}</th>
+        <th>{{ t().address }}</th>@if (auth.hasAnyRole('edit_users', 'delete_users')) { <th class="actions-heading">{{ t().actions }}</th> }
       </tr></thead>
-      <tbody>@if (loading()) { <tr><td colspan="5" class="empty">{{ t().loading }}</td></tr> } @else {
-        @for (person of paginatedPeople(); track person.id) { <tr><td><span class="id-badge">#{{ person.id }}</span></td><td><strong>{{ person.firstName }} {{ person.lastName }}</strong></td><td>{{ person.age }} {{ t().years }}</td><td>{{ person.addressId ? '#' + person.addressId : '—' }}</td><td class="actions"><button type="button" class="icon-button edit" (click)="edit(person.id)" [attr.aria-label]="t().edit">✎</button><button type="button" class="icon-button delete" (click)="remove(person)" [attr.aria-label]="t().delete">×</button></td></tr> }
-        @empty { <tr><td colspan="5" class="empty">{{ t().empty }}</td></tr> }
+      <tbody>@if (loading()) { <tr><td [attr.colspan]="auth.hasAnyRole('edit_users', 'delete_users') ? 5 : 4" class="empty">{{ t().loading }}</td></tr> } @else {
+        @for (person of paginatedPeople(); track person.id) { <tr><td><span class="id-badge">#{{ person.id }}</span></td><td><strong>{{ person.firstName }} {{ person.lastName }}</strong></td><td>{{ person.age }} {{ t().years }}</td><td>{{ person.addressId ? '#' + person.addressId : '—' }}</td>@if (auth.hasAnyRole('edit_users', 'delete_users')) { <td class="actions">@if (auth.hasRole('edit_users')) { <button type="button" class="icon-button edit" (click)="edit(person.id)" [attr.aria-label]="t().edit">✎</button> } @if (auth.hasRole('delete_users')) { <button type="button" class="icon-button delete" (click)="remove(person)" [attr.aria-label]="t().delete">×</button> }</td> }</tr> }
+        @empty { <tr><td [attr.colspan]="auth.hasAnyRole('edit_users', 'delete_users') ? 5 : 4" class="empty">{{ t().empty }}</td></tr> }
       }</tbody>
     </table></div>
     <nav class="pagination" [attr.aria-label]="t().pagination">

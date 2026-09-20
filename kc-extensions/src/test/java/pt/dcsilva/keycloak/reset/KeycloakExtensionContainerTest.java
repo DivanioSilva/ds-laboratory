@@ -233,6 +233,6 @@ class KeycloakExtensionContainerTest {
     }
 
     private static Path providerJar() {
-        return Path.of("target", "kc-extensions-1.0.0-SNAPSHOT.jar").toAbsolutePath();
+        return Path.of("target", "kc-extensions-1.0.0-SNAPSHOT-provider.jar").toAbsolutePath();
     }
 }

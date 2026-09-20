@@ -39,7 +39,7 @@ build_and_deploy() {
   docker compose build
 
   echo "[4/4] Deploying the services..."
-  docker compose up -d --remove-orphans
+  docker compose up -d --remove-orphans --force-recreate
 
   echo
   echo "Deployment completed."

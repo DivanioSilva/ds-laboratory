@@ -67,6 +67,9 @@
                         <id>build-provider-before-container-tests</id>
                         <phase>process-test-classes</phase>
                         <goals><goal>jar</goal></goals>
+                        <configuration>
+                            <classifier>provider</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

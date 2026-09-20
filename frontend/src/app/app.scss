@@ -1,6 +1,7 @@
 :host { display: block; }
 .landing-shell { min-height: 100vh; display: grid; place-items: center; width: min(720px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0; }
 .landing-card { width: 100%; padding: clamp(32px, 7vw, 64px); border: 1px solid var(--border); border-radius: 24px; background: var(--surface); box-shadow: var(--shadow); }
+.landing-language-selector { width: fit-content; margin-left: auto; grid-template-columns: auto auto; align-items: center; }
 .landing-card h1 { max-width: 620px; margin-top: 12px; }
 .landing-card > p { max-width: 590px; font-size: 1.08rem; line-height: 1.7; }
 .landing-card ul { display: grid; gap: 12px; margin: 28px 0; padding: 0; list-style: none; color: var(--text); }

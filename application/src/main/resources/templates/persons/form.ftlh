@@ -21,20 +21,20 @@
                 <#else>
                     <#assign languagePath="/persons/new">
                 </#if>
-                <a href="${languagePath}?lang=pt" class="<#if .locale == 'pt'>active</#if>">PT</a>
-                <a href="${languagePath}?lang=en" class="<#if .locale == 'en'>active</#if>">EN</a>
-                <a href="${languagePath}?lang=it" class="<#if .locale == 'it'>active</#if>">IT</a>
-                <a href="${languagePath}?lang=es" class="<#if .locale == 'es'>active</#if>">ES</a>
-                <a href="${languagePath}?lang=fr" class="<#if .locale == 'fr'>active</#if>">FR</a>
-                <a href="${languagePath}?lang=de" class="<#if .locale == 'de'>active</#if>">DE</a>
+                <a href="${languagePath}?lang=pt" class="<#if .locale?starts_with('pt')>active</#if>">PT</a>
+                <a href="${languagePath}?lang=en" class="<#if .locale?starts_with('en')>active</#if>">EN</a>
+                <a href="${languagePath}?lang=it" class="<#if .locale?starts_with('it')>active</#if>">IT</a>
+                <a href="${languagePath}?lang=es" class="<#if .locale?starts_with('es')>active</#if>">ES</a>
+                <a href="${languagePath}?lang=fr" class="<#if .locale?starts_with('fr')>active</#if>">FR</a>
+                <a href="${languagePath}?lang=de" class="<#if .locale?starts_with('de')>active</#if>">DE</a>
             </nav>
         </div>
     </div>
 
     <section class="panel form-panel">
-        <p class="eyebrow"><@spring.message "persons.form.context"/></p>
+        <p class="eyebrow"><#if person.id??><@spring.message "persons.form.edit.context"/><#else><@spring.message "persons.form.create.context"/></#if></p>
         <h1><#if person.id??><@spring.message "persons.form.edit"/><#else><@spring.message "persons.form.create"/></#if></h1>
-        <p class="subtitle"><@spring.message "persons.form.subtitle"/></p>
+        <p class="subtitle"><#if person.id??><@spring.message "persons.form.edit.subtitle"/><#else><@spring.message "persons.form.create.subtitle"/></#if></p>
 
         <#if person.id??>
             <#assign formAction="/persons/${person.id}">
@@ -84,8 +84,12 @@
                 </#if>
             </div>
             <div class="form-actions">
+                <#if person.id?? && (canDelete!false)>
+                    <button class="button danger" type="submit" formaction="/persons/${person.id}/delete" formmethod="post"
+                            onclick="return confirm('<@spring.message "persons.form.delete.confirm"/>');"><@spring.message "persons.form.delete"/></button>
+                </#if>
                 <a class="button ghost" href="/persons"><@spring.message "persons.form.cancel"/></a>
-                <button class="button primary" type="submit"><@spring.message "persons.form.save"/></button>
+                <button class="button primary" type="submit"><#if person.id??><@spring.message "persons.form.edit.save"/><#else><@spring.message "persons.form.create.save"/></#if></button>
             </div>
         </form>
     </section>

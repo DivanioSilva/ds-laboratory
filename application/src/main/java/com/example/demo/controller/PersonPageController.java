@@ -120,10 +120,11 @@ public class PersonPageController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id, Authentication authentication, Model model) {
         Person person = findPerson(id);
         model.addAttribute("person", personMapper.toDto(person));
         addAddresses(model);
+        model.addAttribute("canDelete", hasRole(authentication, "delete_users"));
         return "persons/form";
     }
 
@@ -132,10 +133,12 @@ public class PersonPageController {
             @PathVariable Long id,
             @Valid @ModelAttribute("person") PersonDto personDto,
             BindingResult bindingResult,
+            Authentication authentication,
             Model model) {
         personDto.setId(id);
         if (bindingResult.hasErrors()) {
             addAddresses(model);
+            model.addAttribute("canDelete", hasRole(authentication, "delete_users"));
             return "persons/form";
         }
         Person person = findPerson(id);
@@ -151,6 +154,12 @@ public class PersonPageController {
             throw new PersonNotFoundException(id);
         }
         personRepository.deleteById(id);
+        return "redirect:/persons";
+    }
+
+    @PostMapping("/clean")
+    public String clean() {
+        personRepository.deleteAllInBatch();
         return "redirect:/persons";
     }
 

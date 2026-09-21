@@ -33,11 +33,10 @@
             <span class="authenticated-user">${username}</span>
             <form action="/logout" method="post" class="inline-form"><button class="button ghost compact" type="submit"><@spring.message "home.logout"/></button></form>
             <a class="button ghost" href="/addresses/new?lang=${.locale}"><@spring.message "addresses.add"/></a>
-            <#if canCreate><a class="button primary" href="/persons/new?lang=${.locale}"><@spring.message "persons.add"/></a></#if>
         </div>
     </header>
 
-    <#if canCreate || canImport><section class="grid" aria-label="<@spring.message 'persons.title'/>">
+    <#if canCreate || canImport><section class="grid action-grid<#if canCreate && !canImport> single-action</#if>" aria-label="<@spring.message 'persons.title'/>">
         <#if canCreate>
         <article class="card quick-action-card">
             <span class="step">01</span>
@@ -72,14 +71,21 @@
                 <h2><@spring.message "persons.list.title"/></h2>
                 <p>${totalPeople} <@spring.message "persons.list.results"/></p>
             </div>
-            <form action="/persons" method="get" class="search" data-live-search>
-                <input type="hidden" name="lang" value="${.locale}">
-                <input type="hidden" name="sort" value="${sort}">
-                <input type="hidden" name="direction" value="${direction}">
-                <input type="hidden" name="size" value="${size}">
-                <label for="query"><span aria-hidden="true">⌕</span><span class="sr-only"><@spring.message "persons.search.label"/></span></label>
-                <input id="query" name="query" value="${query!}" autocomplete="off" placeholder="<@spring.message 'persons.search.placeholder'/>">
-            </form>
+            <div class="list-header-actions">
+                <#if canDelete>
+                    <form action="/persons/clean" method="post" class="inline-form" onsubmit="return confirm('<@spring.message "persons.clean.confirm"/>');">
+                        <button class="button danger compact" type="submit"><@spring.message "persons.clean"/></button>
+                    </form>
+                </#if>
+                <form action="/persons" method="get" class="search" data-live-search>
+                    <input type="hidden" name="lang" value="${.locale}">
+                    <input type="hidden" name="sort" value="${sort}">
+                    <input type="hidden" name="direction" value="${direction}">
+                    <input type="hidden" name="size" value="${size}">
+                    <label for="query"><span aria-hidden="true">⌕</span><span class="sr-only"><@spring.message "persons.search.label"/></span></label>
+                    <input id="query" name="query" value="${query!}" autocomplete="off" placeholder="<@spring.message 'persons.search.placeholder'/>">
+                </form>
+            </div>
         </div>
 
         <#macro sortLink field messageCode>
@@ -108,11 +114,11 @@
                         <td>${person.age} <@spring.message "persons.years"/></td>
                         <td><#if person.addressId??>${person.addressId}<#else>—</#if></td>
                         <#if canEdit || canDelete><td class="actions">
-                            <#if canEdit><a class="icon-button" href="/persons/${person.id}/edit?lang=${.locale}" title="<@spring.message 'persons.action.edit'/>">✎ <span><@spring.message "persons.action.edit"/></span></a></#if>
+                            <#if canEdit><a class="icon-button" href="/persons/${person.id}/edit?lang=${.locale}" aria-label="<@spring.message 'persons.action.edit'/>" title="<@spring.message 'persons.action.edit'/>">✎</a></#if>
                             <#if canDelete>
                             <form action="/persons/${person.id}/delete" method="post" class="inline-form">
                                 <input type="hidden" name="lang" value="${.locale}">
-                                <button class="icon-button danger" type="submit" title="<@spring.message 'persons.action.delete'/>">⌫ <span><@spring.message "persons.action.delete"/></span></button>
+                                <button class="icon-button danger" type="submit" aria-label="<@spring.message 'persons.action.delete'/>" title="<@spring.message 'persons.action.delete'/>">🗑</button>
                             </form>
                             </#if>
                         </td></#if>

@@ -41,6 +41,7 @@ import java.io.IOException;
 public class SecurityConfig {
 
     private static final String KEYCLOAK_REFRESHED_ATTRIBUTE = "keycloakSessionRefreshed";
+    private static final String POST_LOGIN_REDIRECT_ATTRIBUTE = "postLoginRedirect";
 
     @Bean
     ClientRegistrationRepository clientRegistrationRepository(
@@ -72,13 +73,20 @@ public class SecurityConfig {
                         .requestMatchers("/persons/*/edit").hasRole("edit_users")
                         .requestMatchers(HttpMethod.POST, "/persons").hasRole("create_users")
                         .requestMatchers("/persons/*/delete").hasRole("delete_users")
+                        .requestMatchers(HttpMethod.POST, "/persons/clean").hasRole("delete_users")
                         .requestMatchers("/persons/*").hasRole("edit_users")
                         .requestMatchers(HttpMethod.POST, "/api/persons/import").hasRole("import_users")
                         .requestMatchers("/persons/**", "/addresses/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
-                    request.getSession(true).setAttribute(KEYCLOAK_REFRESHED_ATTRIBUTE, true);
-                    response.sendRedirect(request.getContextPath() + "/persons");
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute(KEYCLOAK_REFRESHED_ATTRIBUTE, true);
+                    String redirectPath = (String) session.getAttribute(POST_LOGIN_REDIRECT_ATTRIBUTE);
+                    session.removeAttribute(POST_LOGIN_REDIRECT_ATTRIBUTE);
+                    response.sendRedirect(request.getContextPath()
+                            + (redirectPath != null && redirectPath.startsWith("/persons")
+                                    ? redirectPath
+                                    : "/persons"));
                 }))
                 .logout(logout -> logout.logoutSuccessHandler(keycloakLogoutSuccessHandler))
                 .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
@@ -114,6 +122,11 @@ public class SecurityConfig {
                     return;
                 }
 
+                String redirectPath = request.getRequestURI().substring(request.getContextPath().length());
+                if (request.getQueryString() != null && !request.getQueryString().isBlank()) {
+                    redirectPath += "?" + request.getQueryString();
+                }
+                request.getSession(true).setAttribute(POST_LOGIN_REDIRECT_ATTRIBUTE, redirectPath);
                 response.sendRedirect(request.getContextPath() + "/oauth2/authorization/keycloak");
             }
         };

@@ -130,6 +130,8 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 .button.primary:hover { background: var(--primary-dark); }
 .button.secondary { color: var(--primary); background: var(--secondary-background); }
 .button.ghost { color: var(--ink); background: transparent; border-color: var(--line); }
+.button.danger { color: white; background: var(--danger); }
+.button.danger:hover { filter: brightness(.9); }
 
 .table-panel { overflow: hidden; }
 .table-wrap { overflow-x: auto; }
@@ -186,8 +188,10 @@ tbody tr:last-child td { border-bottom: 0; }
 .language-links a:hover, .language-links a.active { color: var(--primary); border-color: var(--line); background: var(--subtle-background); }
 .topbar h1 { margin-top: 5px; font-size: clamp(2.4rem, 7vw, 4.4rem); }
 .grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr); gap: 20px; }
+.action-grid { align-items: stretch; }
+.action-grid.single-action { grid-template-columns: minmax(0, 520px); }
 .card { border: 1px solid var(--line); background: var(--surface); border-radius: 18px; box-shadow: 0 10px 35px var(--shadow); }
-.quick-action-card, .import-card { padding: 28px; }
+.quick-action-card, .import-card { align-self: stretch; padding: 28px; }
 .quick-action-card p, .import-card > p { margin: 8px 0 22px; color: var(--muted); line-height: 1.6; }
 .step { display: block; color: var(--primary); font-size: .72rem; font-weight: 800; letter-spacing: .18em; }
 .wide { width: 100%; margin-top: 16px; }
@@ -200,6 +204,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .list-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 28px; border-bottom: 1px solid var(--line); }
 .list-header h2 { margin: 5px 0 0; }
 .list-header p { margin: 6px 0 0; color: var(--muted); font-size: .82rem; }
+.list-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .search { position: relative; display: block; width: min(360px, 100%); }
 .search label > span:first-child { position: absolute; z-index: 1; top: 10px; left: 14px; color: var(--muted); font-size: 1.25rem; }
 .search input:not([type="hidden"]) { padding-left: 42px; }
@@ -230,6 +235,7 @@ tbody tr:last-child td { border-bottom: 0; }
     .landing-card { padding: 32px 24px; }
     .topbar, .list-header, .pagination { align-items: stretch; flex-direction: column; }
     .topbar-actions { justify-content: flex-start; }
+    .list-header-actions { align-items: stretch; flex-direction: column-reverse; }
     .grid { grid-template-columns: 1fr; }
     .search { width: 100%; }
     .pagination-actions { justify-content: space-between; flex-wrap: wrap; }

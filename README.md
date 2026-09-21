@@ -254,5 +254,7 @@ before starting the server.
 
 The `realms/realm-users-full.json` file is made available in Keycloak's import
 directory. The server starts with `--import-realm` and imports the `users` realm
-when it does not already exist. Data is stored in the `keycloak_data` volume;
-Keycloak does not overwrite an existing realm on subsequent starts.
+when it does not already exist. Keycloak uses the same PostgreSQL service as the
+application, isolated in the `keycloak` schema. The `postgres_data` volume
+persists both application and Keycloak data across container restarts. Keycloak
+does not overwrite an existing realm on subsequent starts.

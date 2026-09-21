@@ -1,6 +1,6 @@
 # KC Extensions
 
-Maven module containing custom extensions for Keycloak 26.7.3.
+Maven module containing custom extensions for Keycloak 26.6.4.
 
 ## Available extension
 
@@ -42,7 +42,7 @@ mvn clean package
 ## Testing
 
 The test suite includes unit tests and a Testcontainers integration test. The
-integration test builds the provider JAR, starts Keycloak 26.7.3 in Docker,
+integration test builds the provider JAR, starts Keycloak 26.6.4 in Docker,
 installs the extension, obtains an administrator token, and confirms that the
 Required Action provider is available through the Keycloak Admin API. A second
 container test creates a realm, client, and user, signs the user in, submits the
@@ -219,7 +219,7 @@ mechanism used by Keycloak.
 ## Compatibility
 
 - Java 17
-- Keycloak 26.7.3
+- Keycloak 26.6.4
 - Maven 3.9 or later
 
 The extension implements the internal `required-action` SPI. This SPI may change

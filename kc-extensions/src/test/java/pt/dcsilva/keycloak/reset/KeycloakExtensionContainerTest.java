@@ -28,7 +28,7 @@ import org.testcontainers.utility.MountableFile;
 @Testcontainers(disabledWithoutDocker = true)
 class KeycloakExtensionContainerTest {
 
-    private static final String KEYCLOAK_VERSION = "26.7.3";
+    private static final String KEYCLOAK_VERSION = "26.6.4";
     private static final String ADMIN_USERNAME = "a";
     private static final String ADMIN_PASSWORD = "a";
     private static final Pattern ACCESS_TOKEN = Pattern.compile("\\\"access_token\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");

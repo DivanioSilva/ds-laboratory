@@ -252,9 +252,9 @@ When `docker compose up --build` runs, the custom Keycloak image compiles this
 module, installs the JAR in `/opt/keycloak/providers/`, and runs `kc.sh build`
 before starting the server.
 
-The `realms/realm-users-full.json` file is made available in Keycloak's import
+The `realms/users-realm.json` file is made available in Keycloak's import
 directory. The server starts with `--import-realm` and imports the `users` realm
 when it does not already exist. Keycloak uses the same PostgreSQL service as the
-application, isolated in the `keycloak` schema. The `postgres_data` volume
+application, isolated in the `keycloak_2664` schema. The `postgres_data` volume
 persists both application and Keycloak data across container restarts. Keycloak
 does not overwrite an existing realm on subsequent starts.

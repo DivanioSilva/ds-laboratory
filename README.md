@@ -112,6 +112,7 @@ docker compose up --build -d
 The services are available at:
 
 - Angular frontend: `http://localhost:4200`
+- FreeMarker web interface: `http://localhost:8080/persons`
 - Spring Boot API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - Keycloak administration: `http://localhost:8081/admin`
@@ -158,6 +159,11 @@ firstName,lastName,age
 ## People CRUD
 
 FreeMarker web interface: `http://localhost:8080/persons`
+
+The FreeMarker interface uses the same `angular-client` and Keycloak login form
+as the Angular frontend. Opening this URL without a session redirects to
+Keycloak; after authentication, the user returns to the requested FreeMarker
+page.
 
 Address creation: `http://localhost:8080/addresses/new`
 

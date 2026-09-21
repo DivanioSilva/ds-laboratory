@@ -7,7 +7,17 @@
     const updateButtons = () => {
         const isDark = document.documentElement.dataset.theme === "dark";
         document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-            button.textContent = isDark ? "☀" : "☾";
+            const icon = isDark ? "☀" : "☾";
+            const iconElement = button.querySelector("[data-theme-icon]");
+            if (iconElement) {
+                iconElement.textContent = icon;
+            } else {
+                button.textContent = icon;
+            }
+            const labelElement = button.querySelector("[data-theme-label]");
+            if (labelElement) {
+                labelElement.textContent = isDark ? "Claro" : "Escuro";
+            }
             button.setAttribute("aria-pressed", String(isDark));
         });
     };

@@ -24,6 +24,9 @@
                 <a href="${languagePath}?lang=pt" class="<#if .locale == 'pt'>active</#if>">PT</a>
                 <a href="${languagePath}?lang=en" class="<#if .locale == 'en'>active</#if>">EN</a>
                 <a href="${languagePath}?lang=it" class="<#if .locale == 'it'>active</#if>">IT</a>
+                <a href="${languagePath}?lang=es" class="<#if .locale == 'es'>active</#if>">ES</a>
+                <a href="${languagePath}?lang=fr" class="<#if .locale == 'fr'>active</#if>">FR</a>
+                <a href="${languagePath}?lang=de" class="<#if .locale == 'de'>active</#if>">DE</a>
             </nav>
         </div>
     </div>

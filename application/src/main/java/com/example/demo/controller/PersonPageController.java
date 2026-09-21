@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.example.demo.dto.PersonDto;
@@ -12,6 +13,7 @@ import com.example.demo.repository.PersonRepository;
 import com.example.demo.repository.AddressRepository;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,13 +46,54 @@ public class PersonPageController {
     @GetMapping
     public String list(
             @RequestParam(required = false, defaultValue = "") String firstName,
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication,
             Model model) {
-        List<Person> people = firstName.isBlank()
+        String term = query == null ? firstName.trim() : query.trim();
+        List<Person> people = term.isBlank()
                 ? personRepository.findAll()
-                : personRepository.findByFirstNameContainingIgnoreCase(firstName.trim());
+                : personRepository.searchByNameOrAge(term);
 
-        model.addAttribute("people", personMapper.toDtoList(people));
-        model.addAttribute("firstName", firstName);
+        Comparator<Person> comparator = switch (sort) {
+            case "name" -> Comparator.comparing(Person::getFirstName, String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(Person::getLastName, String.CASE_INSENSITIVE_ORDER);
+            case "age" -> Comparator.comparing(Person::getAge);
+            default -> Comparator.comparing(Person::getId);
+        };
+        if ("desc".equalsIgnoreCase(direction)) {
+            comparator = comparator.reversed();
+            direction = "desc";
+        } else {
+            direction = "asc";
+        }
+        people.sort(comparator.thenComparing(Person::getId));
+
+        size = List.of(5, 10, 20, 50).contains(size) ? size : 10;
+        int totalPeople = people.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalPeople / size));
+        page = Math.min(Math.max(page, 1), totalPages);
+        int fromIndex = Math.min((page - 1) * size, totalPeople);
+        int toIndex = Math.min(fromIndex + size, totalPeople);
+
+        model.addAttribute("people", personMapper.toDtoList(people.subList(fromIndex, toIndex)));
+        model.addAttribute("query", term);
+        model.addAttribute("sort", List.of("id", "name", "age").contains(sort) ? sort : "id");
+        model.addAttribute("direction", direction);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalPeople", totalPeople);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("firstVisible", totalPeople == 0 ? 0 : fromIndex + 1);
+        model.addAttribute("lastVisible", toIndex);
+        model.addAttribute("username", authentication.getName());
+        model.addAttribute("canCreate", hasRole(authentication, "create_users"));
+        model.addAttribute("canImport", hasRole(authentication, "import_users"));
+        model.addAttribute("canEdit", hasRole(authentication, "edit_users"));
+        model.addAttribute("canDelete", hasRole(authentication, "delete_users"));
         return "persons/list";
     }
 
@@ -127,6 +170,11 @@ public class PersonPageController {
 
     private void addAddresses(Model model) {
         model.addAttribute("addresses", addressMapper.toDtoList(addressRepository.findAll()));
+    }
+
+    private boolean hasRole(Authentication authentication, String role) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
     }
 
 }

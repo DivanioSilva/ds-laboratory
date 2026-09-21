@@ -19,6 +19,9 @@
                 <a href="/addresses/new?lang=pt" class="<#if .locale == 'pt'>active</#if>">PT</a>
                 <a href="/addresses/new?lang=en" class="<#if .locale == 'en'>active</#if>">EN</a>
                 <a href="/addresses/new?lang=it" class="<#if .locale == 'it'>active</#if>">IT</a>
+                <a href="/addresses/new?lang=es" class="<#if .locale == 'es'>active</#if>">ES</a>
+                <a href="/addresses/new?lang=fr" class="<#if .locale == 'fr'>active</#if>">FR</a>
+                <a href="/addresses/new?lang=de" class="<#if .locale == 'de'>active</#if>">DE</a>
             </nav>
         </div>
     </div>

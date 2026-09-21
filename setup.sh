@@ -47,6 +47,7 @@ build_and_deploy() {
   docker compose ps
   echo
   echo "Frontend:  http://localhost:${ANGULAR_PORT:-4200}"
+  echo "FreeMarker: http://localhost:${SPRING_PORT:-8080}/persons"
   echo "API:       http://localhost:${SPRING_PORT:-8080}"
   echo "Keycloak:  http://localhost:${KEYCLOAK_PORT:-8081}"
   echo "SMTP UI:   http://localhost:${FAKE_SMTP_WEB_PORT:-8082}"

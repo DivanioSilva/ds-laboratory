@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/persons").hasRole("create_users")
                         .requestMatchers("/persons/*/delete").hasRole("delete_users")
                         .requestMatchers("/persons/*").hasRole("edit_users")
+                        .requestMatchers(HttpMethod.POST, "/api/persons/import").hasRole("import_users")
                         .requestMatchers("/persons/**", "/addresses/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {

@@ -897,6 +897,7 @@
       "config" : {
         "user.attribute" : "foo",
         "introspection.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "resource_access.${client_id}.roles",
         "jsonType.label" : "String",
@@ -911,6 +912,7 @@
       "config" : {
         "user.attribute" : "foo",
         "introspection.token.claim" : "true",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "realm_access.roles",
         "jsonType.label" : "String",
